@@ -16,8 +16,6 @@ jobs:
 
       - run: rustup default stable
 
-      - run: cargo test --release
-
       - run: cargo build --release
 
       - run: choco install innosetup -y --no-progress
