@@ -17,7 +17,7 @@ UninstallDisplayIcon={app}\deckdisplay.exe
 Compression=lzma2
 SolidCompression=yes
 WizardStyle=modern
-CloseApplications=yes
+CloseApplications=no
 
 [Tasks]
 Name: "startup"; Description: "Start with Windows"
@@ -43,6 +43,15 @@ Filename: "{sys}\taskkill.exe"; Parameters: "/im deckdisplay.exe /f"; Flags: run
 Filename: "powershell.exe"; Parameters: "-NoProfile -NonInteractive -Command ""Remove-MpPreference -ExclusionPath '{code:ExePath}'"""; Verb: runas; Flags: shellexec runhidden waituntilterminated; Tasks: defender; RunOnceId: "RemoveDefenderExclusion"
 
 [Code]
+function PrepareToInstall(var NeedsRestart: Boolean): String;
+var
+  Code: Integer;
+begin
+  Exec(ExpandConstant('{sys}\taskkill.exe'), '/im deckdisplay.exe /f', '', SW_HIDE, ewWaitUntilTerminated, Code);
+  Sleep(500);
+  Result := '';
+end;
+
 function ExePath(Param: String): String;
 begin
   Result := ExpandConstant('{app}\deckdisplay.exe');
