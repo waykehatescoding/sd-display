@@ -96,8 +96,11 @@ fn base64(bytes: &[u8]) -> String {
     out
 }
 
-fn open_browser(url: &str) {
-    let _ = std::process::Command::new("explorer.exe").arg(url).spawn();
+fn open(target: &str) {
+    use windows_sys::Win32::UI::Shell::ShellExecuteW;
+    let w = |s: &str| s.encode_utf16().chain(std::iter::once(0)).collect::<Vec<u16>>();
+    let (verb, file) = (w("open"), w(target));
+    unsafe { ShellExecuteW(std::ptr::null_mut(), verb.as_ptr(), file.as_ptr(), std::ptr::null(), std::ptr::null(), 1) };
 }
 
 fn disable_sleep(api: &hidapi::HidApi, vid: u16, pid: u16, serial: &str) -> bool {
@@ -153,9 +156,7 @@ fn press(app: &App, sources: &mut data::Sources, key: usize) {
         "prev" => s.set_page(active - 1),
         "page" => s.set_page(page_no),
         "refresh" => sources.refresh_weather(),
-        "open" if !target.is_empty() => {
-            let _ = std::process::Command::new("explorer.exe").arg(&target).spawn();
-        }
+        "open" if !target.is_empty() => open(&target),
         _ => {}
     }
 }
@@ -323,7 +324,7 @@ fn main() {
         Err(_) => {
             eprintln!("Already running at {url}");
             if let (false, Some(t)) = (background, config::saved_token()) {
-                open_browser(&format!("{url}/?t={t}"));
+                open(&format!("{url}/?t={t}"));
             }
             return;
         }
@@ -345,7 +346,7 @@ fn main() {
         std::thread::spawn(move || server::run(server, port, &token, app, tx));
     }
     if !background {
-        open_browser(&format!("{url}/?t={token}"));
+        open(&format!("{url}/?t={token}"));
     }
     run(app, tx, rx);
 }
