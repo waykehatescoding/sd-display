@@ -5,6 +5,7 @@ mod data;
 mod gfx;
 mod render;
 mod server;
+mod update;
 mod widgets;
 
 use config::{Config, COLS};
@@ -348,5 +349,6 @@ fn main() {
     if !background {
         open(&format!("{url}/?t={token}"));
     }
+    update::start();
     run(app, tx, rx);
 }

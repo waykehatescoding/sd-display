@@ -35,8 +35,9 @@ Name: "{autodesktop}\Deck Display"; Filename: "{app}\deckdisplay.exe"; Tasks: de
 Root: HKCU; Subkey: "Software\Microsoft\Windows\CurrentVersion\Run"; ValueType: string; ValueName: "Deck Display"; ValueData: """{app}\deckdisplay.exe"" --background"; Flags: uninsdeletevalue; Tasks: startup
 
 [Run]
-Filename: "powershell.exe"; Parameters: "-NoProfile -NonInteractive -Command ""Add-MpPreference -ExclusionPath '{code:ExePath}'"""; Verb: runas; Flags: shellexec runhidden waituntilterminated; Tasks: defender; StatusMsg: "Adding Windows Security exclusion..."
+Filename: "powershell.exe"; Parameters: "-NoProfile -NonInteractive -Command ""Add-MpPreference -ExclusionPath '{code:ExePath}'"""; Verb: runas; Flags: shellexec runhidden waituntilterminated; Tasks: defender; Check: not WizardSilent; StatusMsg: "Adding Windows Security exclusion..."
 Filename: "{app}\deckdisplay.exe"; Description: "Open Deck Display"; Flags: nowait postinstall skipifsilent
+Filename: "{app}\deckdisplay.exe"; Parameters: "--background"; Flags: nowait; Check: WizardSilent
 
 [UninstallRun]
 Filename: "{sys}\taskkill.exe"; Parameters: "/im deckdisplay.exe /f"; Flags: runhidden; RunOnceId: "StopDeckDisplay"

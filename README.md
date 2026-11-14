@@ -15,7 +15,7 @@ It runs in the background with no window and uses around 7 MB of memory. Opening
 
 ## Install
 
-Download `DeckDisplaySetup.exe` from the [latest release](../../releases/latest) and run it.
+Download `DeckDisplaySetup.exe` from the [latest release](../../releases/latest) and run it. After that it updates itself from new releases.
 
 Quit the Elgato Stream Deck app first. Only one program can drive the keys at a time.
 
