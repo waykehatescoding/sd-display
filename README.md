@@ -19,6 +19,8 @@ Download `DeckDisplaySetup.exe` from the [latest release](../../releases/latest)
 
 Quit the Elgato Stream Deck app first. Only one program can drive the keys at a time.
 
+If Windows Security flags it, setup has an optional step that adds an exclusion for `deckdisplay.exe` only. It asks for admin and is removed again on uninstall.
+
 For weather, get a free API key from https://home.openweathermap.org/api_keys and paste it into Settings along with your city.
 
 ## Build

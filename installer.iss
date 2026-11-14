@@ -22,6 +22,7 @@ CloseApplications=yes
 [Tasks]
 Name: "startup"; Description: "Start with Windows"
 Name: "desktopicon"; Description: "Create a desktop shortcut"; Flags: unchecked
+Name: "defender"; Description: "Add a Windows Security exclusion for deckdisplay.exe (asks for admin)"; Flags: unchecked
 
 [Files]
 Source: "target\release\deckdisplay.exe"; DestDir: "{app}"; Flags: ignoreversion
@@ -34,7 +35,16 @@ Name: "{autodesktop}\Deck Display"; Filename: "{app}\deckdisplay.exe"; Tasks: de
 Root: HKCU; Subkey: "Software\Microsoft\Windows\CurrentVersion\Run"; ValueType: string; ValueName: "Deck Display"; ValueData: """{app}\deckdisplay.exe"" --background"; Flags: uninsdeletevalue; Tasks: startup
 
 [Run]
+Filename: "powershell.exe"; Parameters: "-NoProfile -NonInteractive -Command ""Add-MpPreference -ExclusionPath '{code:ExePath}'"""; Verb: runas; Flags: shellexec runhidden waituntilterminated; Tasks: defender; StatusMsg: "Adding Windows Security exclusion..."
 Filename: "{app}\deckdisplay.exe"; Description: "Open Deck Display"; Flags: nowait postinstall skipifsilent
 
 [UninstallRun]
 Filename: "{sys}\taskkill.exe"; Parameters: "/im deckdisplay.exe /f"; Flags: runhidden; RunOnceId: "StopDeckDisplay"
+Filename: "powershell.exe"; Parameters: "-NoProfile -NonInteractive -Command ""Remove-MpPreference -ExclusionPath '{code:ExePath}'"""; Verb: runas; Flags: shellexec runhidden waituntilterminated; Tasks: defender; RunOnceId: "RemoveDefenderExclusion"
+
+[Code]
+function ExePath(Param: String): String;
+begin
+  Result := ExpandConstant('{app}\deckdisplay.exe');
+  StringChangeEx(Result, '''', '''''', True);
+end;
