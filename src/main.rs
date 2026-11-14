@@ -100,6 +100,15 @@ fn open_browser(url: &str) {
     let _ = std::process::Command::new("explorer.exe").arg(url).spawn();
 }
 
+fn disable_sleep(api: &hidapi::HidApi, vid: u16, pid: u16, serial: &str) -> bool {
+    let Ok(dev) = api.open_serial(vid, pid, serial) else { return false };
+    let mut set = [0u8; 32];
+    set[..2].copy_from_slice(&[0x03, 0x0D]);
+    let mut get = [0u8; 32];
+    get[0] = 0x0A;
+    dev.send_feature_report(&set).is_ok() && dev.get_feature_report(&mut get).is_ok() && get[2..6] == [0; 4]
+}
+
 fn connect(hid: &mut Option<hidapi::HidApi>, app: &App) -> Option<StreamDeck> {
     if hid.is_none() {
         *hid = new_hidapi().ok();
@@ -119,6 +128,9 @@ fn connect(hid: &mut Option<hidapi::HidApi>, app: &App) -> Option<StreamDeck> {
             return None;
         }
     };
+    if !disable_sleep(api, kind.vendor_id(), kind.product_id(), &serial) {
+        eprintln!("Could not turn off the Stream Deck sleep timer");
+    }
     let name = deck.product().unwrap_or_else(|_| "Stream Deck".into());
     println!("Connected to {name}");
     let mut s = app.lock().unwrap();
