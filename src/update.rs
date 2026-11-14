@@ -28,6 +28,7 @@ fn check() -> Result<(), String> {
         .flatten()
         .find(|a| a["name"] == "DeckDisplaySetup.exe")
         .and_then(|a| a["browser_download_url"].as_str())
+        .filter(|u| u.starts_with(&format!("{}/releases/download/", env!("CARGO_PKG_REPOSITORY"))))
         .ok_or("release has no installer")?;
     let bytes = agent
         .get(url)
