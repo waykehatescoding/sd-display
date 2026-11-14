@@ -11,11 +11,11 @@ Widgets:
 
 Widgets can span multiple keys. The image is laid out with the 25 px of screen that sits behind the bezel between keys, so graphs and backgrounds line up across keys instead of looking squished.
 
-It runs in the background with no window and uses around 7 MB of memory. You set it up from a page in your browser at http://localhost:3325.
+It runs in the background with no window and uses around 7 MB of memory. Opening it from the Start menu brings up its settings page in your browser.
 
 ## Install
 
-Download `DeckDisplaySetup.exe` from the [latest release](../../releases/latest) and run it. Opening Deck Display from the Start menu opens the settings page.
+Download `DeckDisplaySetup.exe` from the [latest release](../../releases/latest) and run it.
 
 Quit the Elgato Stream Deck app first. Only one program can drive the keys at a time.
 

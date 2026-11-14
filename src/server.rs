@@ -13,6 +13,7 @@ const FONTS: [(&str, &[u8]); 4] = [
     ("BarlowSemiCondensed-Bold.ttf", crate::gfx::FONT_BOLD),
 ];
 const ICON: &[u8] = include_bytes!("../assets/icon.png");
+const LOCKED: &str = "<!doctype html><meta charset=utf-8><title>Deck Display</title><body style=\"background:#161616;color:#9d9c97;font:14px Segoe UI,sans-serif;display:grid;place-items:center;height:100vh;margin:0\"><p>Open Deck Display from the Start menu to change settings.</p>";
 
 fn header(k: &str, v: &str) -> Header {
     Header::from_bytes(k.as_bytes(), v.as_bytes()).unwrap()
@@ -34,7 +35,7 @@ fn json(req: Request, code: u16, body: serde_json::Value) {
     reply(req, code, body.to_string().into_bytes(), "application/json");
 }
 
-pub fn run(server: Server, port: u16, app: App, tx: Sender<Msg>) {
+pub fn run(server: Server, port: u16, token: &str, app: App, tx: Sender<Msg>) {
     let allowed = [format!("127.0.0.1:{port}"), format!("localhost:{port}")];
     for mut req in server.incoming_requests() {
         let host_ok = get_header(&req, "Host").is_some_and(|h| allowed.iter().any(|a| a == h));
@@ -45,6 +46,27 @@ pub fn run(server: Server, port: u16, app: App, tx: Sender<Msg>) {
             continue;
         }
         let path = req.url().split('?').next().unwrap_or("").to_string();
+        let url_token = req.url().split_once("?t=").map(|(_, t)| t.to_string());
+        let session = format!("dd={token}");
+        let cookie_ok = get_header(&req, "Cookie").is_some_and(|c| c.split(';').any(|kv| kv.trim() == session));
+        let public = matches!(path.as_str(), "/app.css" | "/icon.png") || path.starts_with("/fonts/");
+
+        if path == "/" && url_token.as_deref() == Some(token) {
+            let resp = Response::from_data(INDEX.as_bytes().to_vec())
+                .with_header(header("Content-Type", "text/html; charset=utf-8"))
+                .with_header(header("Cache-Control", "no-store"))
+                .with_header(header("Set-Cookie", &format!("{session}; HttpOnly; SameSite=Strict; Path=/")));
+            let _ = req.respond(resp);
+            continue;
+        }
+        if !cookie_ok && !public {
+            if path == "/" {
+                reply(req, 403, LOCKED.into(), "text/html; charset=utf-8");
+            } else {
+                json(req, 403, serde_json::json!({ "error": "Open Deck Display from the Start menu" }));
+            }
+            continue;
+        }
 
         if *req.method() == Method::Get {
             match path.as_str() {

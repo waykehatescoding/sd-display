@@ -310,16 +310,17 @@ fn main() {
         Ok(s) => s,
         Err(_) => {
             eprintln!("Already running at {url}");
-            if !background {
-                open_browser(&url);
+            if let (false, Some(t)) = (background, config::saved_token()) {
+                open_browser(&format!("{url}/?t={t}"));
             }
             return;
         }
     };
+    let token = config::token();
     println!("Configure at {url}");
 
     let app: App = Arc::new(Mutex::new(Shared {
-        cfg: config::load(),
+        cfg: config::load(&|k| widgets::KINDS.contains(&k)),
         device: serde_json::Value::Null,
         clients: Vec::new(),
         new_client: false,
@@ -328,10 +329,11 @@ fn main() {
     let (tx, rx) = channel();
     {
         let (app, tx) = (app.clone(), tx.clone());
-        std::thread::spawn(move || server::run(server, port, app, tx));
+        let token = token.clone();
+        std::thread::spawn(move || server::run(server, port, &token, app, tx));
     }
     if !background {
-        open_browser(&url);
+        open_browser(&format!("{url}/?t={token}"));
     }
     run(app, tx, rx);
 }

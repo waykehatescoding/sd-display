@@ -190,6 +190,10 @@ impl Sources {
 
     fn sample_disks(&mut self, drives: &HashSet<String>) {
         for d in drives {
+            if !crate::config::valid_drive(d) {
+                self.data.disks.insert(d.clone(), None);
+                continue;
+            }
             let path = wide(&format!("{}\\", d.trim_end_matches('\\')));
             let (mut free, mut total, mut _all_free) = (0u64, 0u64, 0u64);
             let ok = unsafe { GetDiskFreeSpaceExW(path.as_ptr(), &mut free, &mut total, &mut _all_free) } != 0;

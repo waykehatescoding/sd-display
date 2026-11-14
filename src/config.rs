@@ -51,7 +51,10 @@ impl Default for Tile {
 
 impl Tile {
     pub fn in_grid(&self) -> bool {
-        self.x >= 0 && self.y >= 0 && self.w >= 1 && self.h >= 1 && self.x + self.w <= COLS && self.y + self.h <= ROWS
+        (0..COLS).contains(&self.x)
+            && (0..ROWS).contains(&self.y)
+            && (1..=COLS - self.x).contains(&self.w)
+            && (1..=ROWS - self.y).contains(&self.h)
     }
 
     pub fn covers(&self, col: i64, row: i64) -> bool {
@@ -166,6 +169,15 @@ impl Config {
                 }
                 t.press.page = t.press.page.clamp(0, 19);
                 cut(&mut t.press.target, 500);
+                let target = t.press.target.trim();
+                if target.starts_with("\\\\") || target.starts_with('/') || target.starts_with('-') {
+                    t.press.target.clear();
+                }
+                if let Some(drive) = t.settings.get("drive").and_then(Value::as_str) {
+                    if !valid_drive(drive) {
+                        t.settings.insert("drive".into(), Value::from("C:"));
+                    }
+                }
             }
         }
         self.active_page = self.active_page.clamp(0, self.pages.len() as i64 - 1);
@@ -173,20 +185,44 @@ impl Config {
     }
 }
 
+pub fn valid_drive(d: &str) -> bool {
+    matches!(d.as_bytes(), [l, b':'] | [l, b':', b'\\'] if l.is_ascii_alphabetic())
+}
+
 pub fn dir() -> PathBuf {
     let base = std::env::var_os("APPDATA").map(PathBuf::from).unwrap_or_else(std::env::temp_dir);
     base.join("streamdeckdisplay")
 }
 
-pub fn load() -> Config {
+pub fn load(known: &dyn Fn(&str) -> bool) -> Config {
     let file = dir().join("config.json");
-    match std::fs::read_to_string(&file) {
+    let mut cfg = match std::fs::read_to_string(&file) {
         Ok(s) => serde_json::from_str(&s).unwrap_or_else(|e| {
             eprintln!("config unreadable, using defaults: {e}");
             Config::default()
         }),
         Err(_) => Config::default(),
+    };
+    if cfg.sanitize(known).is_err() {
+        cfg = Config::default();
     }
+    cfg
+}
+
+pub fn token() -> String {
+    use windows_sys::Win32::Security::Cryptography::{BCryptGenRandom, BCRYPT_USE_SYSTEM_PREFERRED_RNG};
+    let mut buf = [0u8; 16];
+    let ok = unsafe { BCryptGenRandom(std::ptr::null_mut(), buf.as_mut_ptr(), 16, BCRYPT_USE_SYSTEM_PREFERRED_RNG) } == 0;
+    assert!(ok, "no system random source");
+    let t: String = buf.iter().map(|b| format!("{b:02x}")).collect();
+    let d = dir();
+    let _ = std::fs::create_dir_all(&d);
+    let _ = std::fs::write(d.join("session"), &t);
+    t
+}
+
+pub fn saved_token() -> Option<String> {
+    std::fs::read_to_string(dir().join("session")).ok()
 }
 
 pub fn save(cfg: &Config) {
@@ -196,5 +232,31 @@ pub fn save(cfg: &Config) {
     let json = serde_json::to_string_pretty(cfg).unwrap_or_default();
     if std::fs::write(&tmp, json).is_ok() {
         let _ = std::fs::rename(&tmp, d.join("config.json"));
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn huge_coordinates_do_not_pass_the_grid_check() {
+        assert!(!Tile { x: i64::MAX, w: 2, ..Default::default() }.in_grid());
+        assert!(!Tile { x: 4, w: i64::MAX, ..Default::default() }.in_grid());
+        assert!(!Tile { y: -1, ..Default::default() }.in_grid());
+        assert!(Tile { x: 3, y: 1, w: 2, h: 2, ..Default::default() }.in_grid());
+    }
+
+    #[test]
+    fn sanitize_drops_unsafe_targets_and_drives() {
+        let mut cfg = Config::default();
+        let t = &mut cfg.pages[0].tiles[0];
+        t.press.target = r"\\evil\share\x.exe".into();
+        t.settings.insert("drive".into(), Value::from(r"\\evil\share"));
+        cfg.sanitize(&|_| true).unwrap();
+        let t = &cfg.pages[0].tiles[0];
+        assert_eq!(t.press.target, "");
+        assert_eq!(t.settings["drive"], "C:");
+        assert!(valid_drive("D:") && valid_drive(r"d:\") && !valid_drive("CC:"));
     }
 }
