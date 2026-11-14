@@ -35,3 +35,7 @@ The installer is built with [Inno Setup](https://jrsoftware.org/isinfo.php) from
 - The settings page only listens on 127.0.0.1.
 - Stats are only read while a widget on the current page needs them.
 - GPU load comes from Windows performance counters, so it works with AMD, Intel and NVIDIA.
+
+## License
+
+MIT. The bundled Barlow fonts are under the SIL Open Font License, see `assets/fonts/OFL.txt`.
