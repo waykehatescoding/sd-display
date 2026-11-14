@@ -1,0 +1,22 @@
+name: Feature request
+description: Suggest a widget or improvement
+labels: [enhancement]
+body:
+  - type: textarea
+    id: idea
+    attributes:
+      label: What would you like
+      description: What should it show or do on the deck?
+    validations:
+      required: true
+  - type: textarea
+    id: why
+    attributes:
+      label: Why
+      description: What are you trying to keep an eye on or get to faster?
+  - type: input
+    id: size
+    attributes:
+      label: Key size
+      description: How many keys should it take up?
+      placeholder: 2x1

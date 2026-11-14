@@ -1,0 +1,88 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Deck Display</title>
+  <link rel="icon" href="/icon.png">
+  <link rel="stylesheet" href="/app.css">
+</head>
+<body>
+  <header class="top">
+    <nav class="pages" id="pages" aria-label="Pages"></nav>
+    <div class="top-right">
+      <span class="save-state" id="save-state" aria-live="polite"></span>
+      <span class="status" id="status" role="status"><span class="status-text">Looking for a Stream Deck</span></span>
+      <button type="button" class="link-btn" id="open-settings">Settings</button>
+    </div>
+  </header>
+
+  <main class="workspace">
+    <section class="stage" id="stage" aria-label="Stream Deck preview">
+      <div class="deck" id="deck">
+        <div class="keys" id="keys"></div>
+        <div class="overlays" id="overlays"></div>
+        <div class="ghost" id="ghost" hidden></div>
+      </div>
+      <p class="stage-note" id="note"></p>
+    </section>
+
+    <aside class="library" aria-label="Widgets">
+      <input type="search" id="search" placeholder="Search" aria-label="Search widgets">
+      <div id="lib"></div>
+    </aside>
+
+    <section class="inspector" id="inspector" aria-label="Selected widget"><p class="empty">Loading</p></section>
+  </main>
+
+  <dialog id="settings" aria-labelledby="settings-title">
+    <form method="dialog" class="settings">
+      <h2 id="settings-title">Settings</h2>
+
+      <fieldset>
+        <legend>Weather</legend>
+        <label class="field">
+          <span>OpenWeatherMap API key</span>
+          <input type="password" id="set-key" autocomplete="off" spellcheck="false">
+          <small>Free keys come from <a href="https://home.openweathermap.org/api_keys" target="_blank" rel="noreferrer">openweathermap.org</a>. New keys can take an hour to start working.</small>
+        </label>
+        <label class="field">
+          <span>City</span>
+          <input type="text" id="set-city" placeholder="London or London,GB">
+        </label>
+        <div class="field">
+          <span id="units-label">Units</span>
+          <div class="segmented" role="radiogroup" aria-labelledby="units-label">
+            <label><input type="radio" name="units" value="metric"><span>°C, m/s</span></label>
+            <label><input type="radio" name="units" value="imperial"><span>°F, mph</span></label>
+          </div>
+        </div>
+        <label class="toggle">
+          <input type="checkbox" id="set-hide-city">
+          <span>Hide city on the deck</span>
+        </label>
+      </fieldset>
+
+      <fieldset>
+        <legend>Display</legend>
+        <label class="field">
+          <span>Brightness <output id="out-bright"></output></span>
+          <input type="range" id="set-bright" min="0" max="100" step="5">
+        </label>
+        <label class="field">
+          <span>Bezel gap <output id="out-gap"></output></span>
+          <input type="range" id="set-gap" min="0" max="60">
+          <small>Screen pixels hidden between keys. 25 matches Elgato's layout for the 15 key deck. Adjust if lines across keys look offset.</small>
+        </label>
+      </fieldset>
+
+      <div class="settings-actions">
+        <button type="button" class="btn danger" id="quit">Quit Deck Display</button>
+        <button class="btn primary" value="done">Done</button>
+      </div>
+    </form>
+  </dialog>
+
+  <script src="/app.js"></script>
+</body>
+</html>

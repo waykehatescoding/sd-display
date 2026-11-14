@@ -1,0 +1,24 @@
+[package]
+name = "deckdisplay"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+ab_glyph = "0.2.32"
+elgato-streamdeck = "0.14.0"
+hidapi = "2.6.7"
+image = { version = "0.25.10", default-features = false }
+serde = { version = "1.0.229", features = ["derive"] }
+serde_json = { version = "1.0.154", features = ["preserve_order"] }
+tiny-skia = "0.12.0"
+tiny_http = "0.12.0"
+ureq = { version = "3.5.2", features = ["json"] }
+windows-sys = { version = "0.61.2", features = ["Win32_Foundation", "Win32_System_Threading", "Win32_System_SystemInformation", "Win32_Storage_FileSystem", "Win32_NetworkManagement_IpHelper", "Win32_NetworkManagement_Ndis", "Win32_System_Performance", "Win32_System_Console"] }
+
+[build-dependencies]
+winresource = "0.1.34"
+
+[profile.release]
+lto = true
+codegen-units = 1
+strip = true

@@ -1,0 +1,49 @@
+name: Bug report
+description: Something isn't working
+labels: [bug]
+body:
+  - type: textarea
+    id: what
+    attributes:
+      label: What happened
+      description: What did you expect, and what happened instead?
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to reproduce
+      placeholder: |
+        1. Add a Forecast widget
+        2. Set units to imperial
+        3. ...
+    validations:
+      required: true
+  - type: dropdown
+    id: device
+    attributes:
+      label: Device
+      options:
+        - Stream Deck MK.2
+        - Stream Deck MK.2 (Scissor Keys)
+        - Stream Deck Original (2019)
+        - Stream Deck 15 Key Module
+        - Other
+    validations:
+      required: true
+  - type: input
+    id: versions
+    attributes:
+      label: Windows and Deck Display version
+      placeholder: Windows 11 24H2, 0.1.0
+  - type: textarea
+    id: logs
+    attributes:
+      label: Console output
+      description: Run `deckdisplay.exe` from a terminal and paste anything it prints.
+      render: text
+  - type: textarea
+    id: screenshots
+    attributes:
+      label: Screenshots
+      description: A photo of the deck or a screenshot of the config page helps a lot for display bugs.
